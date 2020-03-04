@@ -18,7 +18,7 @@ libraryDependencies ++= Seq(
 
 resolvers ++= Seq(
   "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
-  "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
+  "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases"
 )
 
 scalacOptions ++= Seq("-encoding",

@@ -3,21 +3,20 @@ package org.purang.net.httpize
 
 import java.util.concurrent.ScheduledExecutorService
 
-import org.http4s.{Cookie, Headers, Response, headers}
+import org.http4s.{Cookie, Headers, HttpDate, HttpService, Response, headers}
 import org.http4s.dsl._
 import org.http4s.headers.`Set-Cookie`
-import org.http4s.HttpService
-import java.time.Instant
-
 import java.lang.{Process => _}
+
 import scalaz.stream.Process
 import scalaz.stream.{time => stime}
+
 import concurrent.duration._
 import scala.util.Try
 
 
 class Routes(ec: ScheduledExecutorService) {
-  private implicit def _ec = ec
+  private implicit def _ec: ScheduledExecutorService = ec
 
   val service: HttpService = HttpService {
     case GET -> Root / "hello" => Ok("Hello world!")
@@ -36,10 +35,10 @@ class Routes(ec: ScheduledExecutorService) {
       cookies.foldLeft(ok)((r,c) => r.addCookie(c))
 
     case r @ GET -> Root / "cookies" / "delete" =>
-      val h = Headers((for ((n,_) <- r.multiParams) yield `Set-Cookie`(Cookie(n, "", path = Some("/"), expires = Some(Instant.now()), maxAge = Some(0)))).toList)
+      val h = Headers((for ((n,_) <- r.multiParams) yield `Set-Cookie`(Cookie(n, "", path = Some("/"), expires = Some(HttpDate.now), maxAge = Some(0)))).toList)
 
       Ok(s"Ate all the cookies ${r.multiParams}")
-          .withHeaders(h)
+          .replaceAllHeaders(h)
 
 
     case r @ GET -> Root / "cookies"  => Ok(r.headers.get(headers.Cookie).fold("What Cookies?")(_.value))
@@ -48,7 +47,7 @@ class Routes(ec: ScheduledExecutorService) {
       if(t > 10) {
         BadRequest(s"From n to 10 seconds and $time is not in it.")
       } else {
-        Ok(Process.sleepUntil(stime.sleep(t seconds) fby Process(true))(Process(s"Phew! Done after $t seconds.")))
+        Ok(Process.sleepUntil(stime.sleep(t.seconds) fby Process(true))(Process(s"Phew! Done after $t seconds.")))
       }
     }.getOrElse(BadRequest(s"$time needs to be an int"))
 
@@ -58,7 +57,7 @@ class Routes(ec: ScheduledExecutorService) {
       if(t > 10) {
         BadRequest(s"From n to 10 seconds and $time is not in it.")
       } else {
-        stime.sleep(t seconds).run.flatMap(_ =>
+        stime.sleep(t.seconds).run.flatMap(_ =>
           Ok(s"Phew! Done after $t seconds.")
         )
       }
@@ -76,7 +75,7 @@ class Routes(ec: ScheduledExecutorService) {
 
 
 class GzipRoutes {
-  val service = HttpService {
+  val service: HttpService = HttpService {
     case r @ GET -> Root / "gzip" =>  Ok(All(r))
   }
 }

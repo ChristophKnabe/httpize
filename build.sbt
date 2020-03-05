@@ -6,7 +6,7 @@ organization := "org.purang.net"
 
 scalaVersion := "2.11.8"
 
-val http4sVersion = "0.14.11"
+val http4sVersion = "0.16.6" //"0.15.16" //"0.14.11"
 
 libraryDependencies ++= Seq(
   "org.http4s" %% "http4s-core" % http4sVersion,
